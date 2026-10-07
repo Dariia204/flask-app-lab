@@ -1,0 +1,19 @@
+/* Власні стилі для покращення вигляду */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.card {
+    border-radius: 10px;
+    border: none;
+}
+
+.navbar-brand {
+    font-weight: bold;
+    letter-spacing: 0.5px;
+}
+
+/* Кастомний стиль для фото */
+.rounded-circle {
+    border: 3px solid #0d6efd;
+}

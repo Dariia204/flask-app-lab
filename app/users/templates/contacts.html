@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card p-4 shadow-sm">
+            <h2 class="h4 text-primary border-bottom pb-2 mb-4">Контакти</h2>
+            
+            <p>Ви можете зв'язатися зі мною через форму нижче або за вказаними контактами.</p>
+            
+            <div class="mb-4">
+                <p class="mb-1"><strong>Email:</strong> example@email.com</p>
+                <p class="mb-1"><strong>Місто:</strong> Івано-Франківськ</p>
+            </div>
+
+            <h3 class="h5 mb-3">Надіслати повідомлення</h3>
+            
+            <!-- Форма-заглушка -->
+            <form action="#" method="post">
+                <div class="mb-3">
+                    <label for="name" class="form-label">Ваше ім'я</label>
+                    <input type="text" class="form-content form-control" id="name" placeholder="Введіть ім'я" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="email" class="form-label">Ваш Email</label>
+                    <input type="email" class="form-control" id="email" placeholder="name@example.com" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="message" class="form-label">Повідомлення</label>
+                    <textarea class="form-control" id="message" rows="4" placeholder="Напишіть ваше повідомлення..." required></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Надіслати</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

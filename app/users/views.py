@@ -27,14 +27,12 @@ def admin():
   return redirect(to_url)
 
 
-# 1. Сторінка входу (Login)
 @users_bp.route('/login', methods=['GET', 'POST'])
 def login():
   if request.method == 'POST':
     username = request.form.get('username')
     password = request.form.get('password')
 
-    # Проста перевірка (заглушка)
     if username == 'admin' and password == '1234':
       session['user'] = username
       flash('Ви успішно увійшли в систему!', 'success')
@@ -46,7 +44,6 @@ def login():
   return render_template('users/login.html', title='Вхід')
 
 
-# 2. Сторінка профілю (Profile) з кукі та темою
 @users_bp.route('/profile')
 def profile():
   if 'user' not in session:
@@ -55,7 +52,7 @@ def profile():
 
   user = session['user']
   cookies = request.cookies
-  theme = request.cookies.get('theme', 'light')  # тема за замовчуванням світла
+  theme = request.cookies.get('theme', 'light')
 
   return render_template(
       'users/profile.html',
@@ -66,7 +63,6 @@ def profile():
   )
 
 
-# 3. Вихід із системи (Logout)
 @users_bp.route('/logout')
 def logout():
   session.pop('user', None)
@@ -74,7 +70,6 @@ def logout():
   return redirect(url_for('users.login'))
 
 
-# 4. Робота з кукі: Додавання / Видалення
 @users_bp.route('/cookie/add', methods=['POST'])
 def add_cookie():
   key = request.form.get('key')
@@ -102,13 +97,11 @@ def delete_cookie():
 def delete_all_cookies():
   response = make_response(redirect(url_for('users.profile')))
   for key in request.cookies:
-    if key != 'session':  # сесію залишаємо, щоб не розлогінити користувача
+    if key != 'session':
       response.delete_cookie(key)
   flash('Усі кукі видалено!', 'info')
   return response
 
-
-# 5. Зміна колірної схеми (Теми)
 @users_bp.route('/theme/<string:theme_name>')
 def change_theme(theme_name):
   response = make_response(redirect(url_for('users.profile')))

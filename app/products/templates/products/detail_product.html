@@ -1,12 +1,69 @@
-{% extends 'base.html' %}
+
+{% extends "base.html" %}
 
 {% block content %}
+
 <div class="card shadow-sm p-4">
-    <div class="mb-3">
-        <a href="{{ url_for('products.product_list') }}" class="btn btn-secondary btn-sm">&larr; Назад до каталогу</a>
+
+    <h2 class="mb-4">{{ product.name }}</h2>
+
+    {% if product.image_url %}
+        <img
+            src="{{ product.image_url }}"
+            width="250"
+            class="img-thumbnail mb-3"
+            alt="{{ product.name }}"
+            style="object-fit: contain;"
+        >
+    {% else %}
+        <div class="bg-light text-secondary d-flex align-items-center justify-content-center mb-3"
+             style="width: 250px; height: 180px;">
+            Зображення відсутнє
+        </div>
+    {% endif %}
+
+    <p><strong>Опис:</strong> {{ product.content }}</p>
+
+    <p>
+        <strong>Ціна:</strong>
+        {{ "%.2f"|format(product.price) }} грн
+    </p>
+
+    <p><strong>Категорія:</strong> {{ product.category }}</p>
+
+    <p><strong>Кількість:</strong> {{ product.quantity }}</p>
+
+    <p>
+        <strong>Дата створення:</strong>
+        {{ product.created_at if product.created_at else "Не вказана (старий товар)" }}
+    </p>
+
+    <div class="d-flex gap-2 flex-wrap">
+
+        <a href="{{ url_for('products.edit_product', id=product.id) }}"
+           class="btn btn-warning">
+            Редагувати
+        </a>
+
+        <form method="POST"
+              action="{{ url_for('products.delete_product', id=product.id) }}">
+
+            {{ delete_form.hidden_tag() }}
+
+            <button type="submit"
+                    class="btn btn-danger"
+                    onclick="return confirm('Ви впевнені, що хочете видалити цей товар?')">
+                Видалити
+            </button>
+        </form>
+
+        <a href="{{ url_for('products.product_list') }}"
+           class="btn btn-secondary">
+            Назад
+        </a>
+
     </div>
-    <h1 class="text-primary mb-3">{{ product.name }}</h1>
-    <p class="fs-5">{{ product.content }}</p>
-    <p class="fs-3 fw-bold text-success">Ціна: ${{ product.price }}</p>
+
 </div>
+
 {% endblock %}

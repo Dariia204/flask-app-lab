@@ -1,0 +1,49 @@
+
+{% extends "base.html" %}
+
+{% from "macros.html" import render_field %}
+
+{% block content %}
+
+<div class="card shadow-sm p-4">
+
+    <h2 class="mb-4">
+        Додати товар
+    </h2>
+
+    <form
+        method="POST"
+        enctype="multipart/form-data"
+        novalidate
+    >
+
+        {{ form.hidden_tag() }}
+
+        {{ render_field(form.name) }}
+
+        {{ render_field(form.content) }}
+
+        {{ render_field(form.price) }}
+
+        {{ render_field(form.category) }}
+
+        {{ render_field(form.quantity) }}
+
+        {{ render_field(form.image) }}
+
+        {{ form.submit(
+            class="btn btn-success"
+        ) }}
+
+        <a
+            href="{{ url_for('products.product_list') }}"
+            class="btn btn-secondary"
+        >
+            Скасувати
+        </a>
+
+    </form>
+
+</div>
+
+{% endblock %}

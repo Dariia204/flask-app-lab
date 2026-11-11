@@ -1,0 +1,42 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-7">
+
+        <div class="card border-danger shadow-sm">
+            <div class="card-body text-center p-4">
+
+                <h2 class="text-danger mb-3">
+                    Видалення поста
+                </h2>
+
+                <p>
+                    Ти дійсно хочеш видалити пост
+                    <strong>{{ post.title }}</strong>?
+                </p>
+
+                <p class="text-muted">
+                    Цю дію неможливо скасувати.
+                </p>
+
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+
+                    <button type="submit"
+                            class="btn btn-danger">
+                        Так, видалити
+                    </button>
+
+                    <a href="{{ url_for('posts.detail_post', id=post.id) }}"
+                       class="btn btn-secondary">
+                        Скасувати
+                    </a>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

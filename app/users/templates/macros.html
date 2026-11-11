@@ -1,0 +1,27 @@
+
+{% macro render_field(field) %}
+
+<div class="mb-3">
+
+    {{ field.label(class="form-label") }}
+
+    {{ field(
+        class="form-control" +
+        (" is-invalid" if field.errors else "")
+    ) }}
+
+    {% if field.errors %}
+
+        <div class="invalid-feedback d-block">
+
+            {% for error in field.errors %}
+                <div>{{ error }}</div>
+            {% endfor %}
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+{% endmacro %}

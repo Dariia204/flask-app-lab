@@ -3,6 +3,7 @@ import logging
 from pathlib import Path
 
 from flask import (
+    Blueprint,
     render_template,
     redirect,
     url_for,
@@ -10,11 +11,12 @@ from flask import (
     request,
 )
 
-from app import app
 from forms import ContactForm
 
 
-LOG_FILE = Path(app.root_path).parent / "app.log"
+main_bp = Blueprint("main", __name__)
+
+LOG_FILE = Path(__file__).resolve().parent.parent / "app.log"
 
 logger = logging.getLogger("contact_form")
 logger.setLevel(logging.INFO)
@@ -34,7 +36,7 @@ if not logger.handlers:
     logger.addHandler(handler)
 
 
-@app.route("/")
+@main_bp.route("/")
 def homepage():
     return render_template(
         "homepage.html",
@@ -43,7 +45,7 @@ def homepage():
     )
 
 
-@app.route("/resume")
+@main_bp.route("/resume")
 def resume():
     return render_template(
         "resume.html",
@@ -51,8 +53,8 @@ def resume():
     )
 
 
-@app.route("/contact", methods=["GET", "POST"])
-@app.route("/contacts", methods=["GET", "POST"])
+@main_bp.route("/contact", methods=["GET", "POST"])
+@main_bp.route("/contacts", methods=["GET", "POST"])
 def contact():
     form = ContactForm()
 
@@ -83,7 +85,7 @@ def contact():
                 "danger",
             )
 
-        return redirect(url_for("contact"))
+        return redirect(url_for("main.contact"))
 
     if request.method == "POST":
         flash(

@@ -5,7 +5,7 @@
 
         <a
             class="navbar-brand"
-            href="{{ url_for('homepage') }}"
+            href="{{ url_for('main.homepage') }}"
         >
             Flask App
         </a>
@@ -29,45 +29,38 @@
 
             <div class="navbar-nav ms-auto">
 
-                <a
-                    class="nav-link"
-                    href="{{ url_for('homepage') }}"
-                >
+                <a class="nav-link"
+                   href="{{ url_for('main.homepage') }}">
                     Головна
                 </a>
 
-                <a
-                    class="nav-link"
-                    href="{{ url_for('resume') }}"
-                >
+                <a class="nav-link"
+                   href="{{ url_for('main.resume') }}">
                     Резюме
                 </a>
 
-                <a
-                    class="nav-link"
-                    href="{{ url_for('contact') }}"
-                >
+                <a class="nav-link"
+                   href="{{ url_for('main.contact') }}">
                     Контакти
                 </a>
 
-                <a
-                    class="nav-link"
-                    href="{{ url_for('products.product_list') }}"
-                >
+                <a class="nav-link"
+                   href="{{ url_for('products.product_list') }}">
                     Товари
                 </a>
 
-                <a
-                    class="nav-link"
-                    href="{{ url_for('users.login') }}"
-                >
+                <a class="nav-link"
+                   href="{{ url_for('posts.all_posts') }}">
+                    Пости
+                </a>
+
+                <a class="nav-link"
+                   href="{{ url_for('users.login') }}">
                     Вхід
                 </a>
 
-                <a
-                    class="nav-link"
-                    href="{{ url_for('users.profile') }}"
-                >
+                <a class="nav-link"
+                   href="{{ url_for('users.profile') }}">
                     Профіль
                 </a>
 

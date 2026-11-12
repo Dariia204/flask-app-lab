@@ -4,7 +4,6 @@ from flask import (
     redirect,
     url_for,
     flash,
-    request,
     session,
 )
 
@@ -51,8 +50,8 @@ def create_post():
             title=form.title.data,
             content=form.content.data,
             category=form.category.data,
-            posted=form.publish_date.data,
-            is_active=form.enabled.data,
+            posted=form.posted.data,
+            is_active=form.is_active.data,
             author=get_post_author(),
         )
 
@@ -96,17 +95,8 @@ def update_post(id):
 
     form = PostForm(obj=post)
 
-    if request.method == "GET":
-        form.enabled.data = post.is_active
-        form.publish_date.data = post.posted
-
     if form.validate_on_submit():
-        post.title = form.title.data
-        post.content = form.content.data
-        post.category = form.category.data
-        post.is_active = form.enabled.data
-        post.posted = form.publish_date.data
-
+        form.populate_obj(post)
         db.session.commit()
 
         flash(

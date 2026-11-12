@@ -49,8 +49,8 @@ def test_create_post(client, app):
             "title": "New Post",
             "content": "This is a new post",
             "category": "news",
-            "enabled": "y",
-            "publish_date": "2026-11-11T12:00",
+            "is_active": "y",
+            "posted": "2026-11-11T12:00",
         },
         follow_redirects=True,
     )
@@ -104,8 +104,8 @@ def test_update_post(client, app):
             "title": "Updated Post",
             "content": "Updated post content",
             "category": "publication",
-            "enabled": "y",
-            "publish_date": "2026-11-11T14:00",
+            "is_active": "y",
+            "posted": "2026-11-11T14:00",
         },
         follow_redirects=True,
     )
@@ -172,8 +172,8 @@ def test_invalid_post_title(client, app):
             "title": "A",
             "content": "Valid content",
             "category": "tech",
-            "enabled": "y",
-            "publish_date": "2026-11-11T12:00",
+            "is_active": "y",
+            "posted": "2026-11-11T12:00",
         },
     )
 

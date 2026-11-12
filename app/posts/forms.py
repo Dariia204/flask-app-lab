@@ -37,12 +37,12 @@ class PostForm(FlaskForm):
         render_kw={"rows": 6},
     )
 
-    enabled = BooleanField(
+    is_active = BooleanField(
         "Активний пост",
         default=True,
     )
 
-    publish_date = DateTimeLocalField(
+    posted = DateTimeLocalField(
         "Дата та час публікації",
         format="%Y-%m-%dT%H:%M",
         default=datetime.now,

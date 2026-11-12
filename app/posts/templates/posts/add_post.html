@@ -17,11 +17,11 @@
                     {{ render_field(form.title) }}
                     {{ render_field(form.content) }}
                     {{ render_field(form.category) }}
-                    {{ render_field(form.publish_date) }}
+                    {{ render_field(form.posted) }}
 
                     <div class="form-check mb-3">
-                        {{ form.enabled(class="form-check-input") }}
-                        {{ form.enabled.label(class="form-check-label") }}
+                        {{ form.is_active(class="form-check-input") }}
+                        {{ form.is_active.label(class="form-check-label") }}
                     </div>
 
                     <div class="d-flex gap-2">

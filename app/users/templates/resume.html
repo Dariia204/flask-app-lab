@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4 text-center mb-4">
+        <div class="card p-3 shadow-sm">
+            <img src="{{ url_for('static', filename='images/photo.png') }}" class="img-fluid rounded-circle mx-auto mb-3" style="max-width: 200px;" alt="Моє фото">
+            <h3>Дарія Кишеня</h3>
+            <p class="text-muted">Студентка</p>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <section class="card p-4 mb-4 shadow-sm">
+            <h2 class="h4 text-primary border-bottom pb-2">Про себе</h2>
+            <p>
+                Студентка Карпатського національного університету імені Василя Стефаника.
+                Захоплююся веб-розробкою, вивченням Python/Flask та сучасних технологій.
+            </p>
+        </section>
+
+        <section class="card p-4 mb-4 shadow-sm">
+            <h2 class="h4 text-primary border-bottom pb-2">Освіта</h2>
+            <h5>Карпатський національний університет імені Василя Стефаника</h5>
+            <p class="mb-0">Спеціальність: Інженерія програмного забезпечення</p>
+            <small class="text-muted">2024 - дотепер</small>
+        </section>
+
+        <section class="card p-4 mb-4 shadow-sm">
+            <h2 class="h4 text-primary border-bottom pb-2">Навички</h2>
+            <ul>
+                <li>Базові знання Java та PHP</li>
+                <li>Верстка HTML5 / CSS3 / Bootstrap 5</li>
+                <li>Робота з Git та GitHub</li>
+            </ul>
+        </section>
+
+        <section class="card p-4 mb-4 shadow-sm">
+            <h2 class="h4 text-primary border-bottom pb-2">Технології</h2>
+            <div>
+                <span class="badge bg-primary fs-6 m-1">Python</span>
+                <span class="badge bg-secondary fs-6 m-1">Java</span>
+                <span class="badge bg-success fs-6 m-1">HTML/CSS</span>
+                <span class="badge bg-info fs-6 text-dark m-1">PHP</span>
+                <span class="badge bg-dark fs-6 m-1">Git</span>
+            </div>
+        </section>
+
+        <section class="card p-4 mb-4 shadow-sm">
+            <h2 class="h4 text-primary border-bottom pb-2">Досвід роботи / Проєкти</h2>
+            <h5>Розробка веб-додатку на Flask</h5>
+            <p class="mb-1">Створення баз даних, налаштування маршрутизації та шаблонізації Jinja2.</p>
+            <small class="text-muted">Лабораторні роботи з веб-розробки</small>
+        </section>
+    </div>
+</div>
+{% endblock %}

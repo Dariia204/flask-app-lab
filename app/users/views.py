@@ -1,0 +1,276 @@
+
+from flask import (
+    render_template,
+    request,
+    redirect,
+    url_for,
+    flash,
+    session,
+    make_response,
+)
+
+from flask_login import (
+    login_user,
+    logout_user,
+    current_user,
+    login_required,
+)
+
+from sqlalchemy.exc import IntegrityError
+
+from app import db
+from app.users import users_bp
+from app.users.models import User
+from app.users.forms import RegistrationForm, LoginForm
+
+
+@users_bp.route("/hi/<string:name>")
+def greetings(name):
+    name_upper = name.upper()
+    age = request.args.get("age", None, type=int)
+
+    return render_template(
+        "users/hi.html",
+        name=name_upper,
+        age=age,
+        title="Greeting Page",
+    )
+
+
+@users_bp.route("/admin")
+def admin():
+    return redirect(
+        url_for(
+            "users.greetings",
+            name="administrator",
+            age=45,
+            _external=True,
+        )
+    )
+
+
+@users_bp.route("/register", methods=["GET", "POST"])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for("users.account"))
+
+    form = RegistrationForm()
+
+    if form.validate_on_submit():
+        user = User(
+            username=form.username.data,
+            email=form.email.data.lower(),
+        )
+
+        user.set_password(form.password.data)
+
+        db.session.add(user)
+
+        try:
+            db.session.commit()
+
+        except IntegrityError:
+            db.session.rollback()
+
+            flash(
+                "Користувач із такими даними вже існує.",
+                "danger",
+            )
+
+            return render_template(
+                "users/register.html",
+                form=form,
+                title="Реєстрація",
+            )
+
+        flash(
+            "Обліковий запис успішно створено!",
+            "success",
+        )
+
+        return redirect(url_for("users.login"))
+
+    return render_template(
+        "users/register.html",
+        form=form,
+        title="Реєстрація",
+    )
+
+
+@users_bp.route("/login", methods=["GET", "POST"])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for("users.account"))
+
+    form = LoginForm()
+
+    if form.validate_on_submit():
+        user = db.session.scalar(
+            db.select(User).where(
+                User.email == form.email.data.lower()
+            )
+        )
+
+        if user and user.check_password(form.password.data):
+            session.clear()
+
+            login_user(
+                user,
+                remember=form.remember.data
+            )
+
+            flash(
+                "Ви успішно увійшли в систему!",
+                "success",
+            )
+
+            return redirect(url_for("users.account"))
+
+        flash(
+            "Неправильна електронна пошта або пароль.",
+            "danger",
+        )
+
+    return render_template(
+        "users/login.html",
+        form=form,
+        title="Вхід",
+    )
+
+
+@users_bp.route("/account")
+@login_required
+def account():
+    return render_template(
+        "users/account.html",
+        user=current_user,
+        title="Обліковий запис",
+    )
+
+
+@users_bp.route("/users")
+@login_required
+def all_users():
+    users = db.session.scalars(
+        db.select(User).order_by(User.id)
+    ).all()
+
+    return render_template(
+        "users/all_users.html",
+        users=users,
+        count=len(users),
+        title="Користувачі",
+    )
+
+
+@users_bp.route("/profile")
+@login_required
+def profile():
+    return render_template(
+        "users/profile.html",
+        title="Профіль",
+        user=current_user.username,
+        cookies=request.cookies,
+        theme=request.cookies.get("theme", "light"),
+    )
+
+
+@users_bp.route("/logout")
+@login_required
+def logout():
+    logout_user()
+
+    flash(
+        "Ви вийшли із системи.",
+        "info",
+    )
+
+    return redirect(url_for("users.login"))
+
+
+@users_bp.route("/cookie/add", methods=["POST"])
+@login_required
+def add_cookie():
+    key = request.form.get("key")
+    value = request.form.get("value")
+    max_age = request.form.get("max_age", type=int)
+
+    response = make_response(
+        redirect(url_for("users.profile"))
+    )
+
+    if key and value and key not in (
+        "session", "remember_token"
+    ):
+        response.set_cookie(
+            key,
+            value,
+            max_age=max_age,
+        )
+
+        flash(
+            f"Кукі '{key}' успішно додано!",
+            "success",
+        )
+
+    return response
+
+
+@users_bp.route("/cookie/delete", methods=["POST"])
+@login_required
+def delete_cookie():
+    key = request.form.get("key")
+
+    response = make_response(
+        redirect(url_for("users.profile"))
+    )
+
+    if key and key not in (
+        "session", "remember_token"
+    ):
+        response.delete_cookie(key)
+
+        flash(
+            f"Кукі '{key}' видалено!",
+            "info",
+        )
+
+    return response
+
+
+@users_bp.route("/cookie/delete_all", methods=["POST"])
+@login_required
+def delete_all_cookies():
+    response = make_response(
+        redirect(url_for("users.profile"))
+    )
+
+    for key in request.cookies:
+        if key not in ("session", "remember_token"):
+            response.delete_cookie(key)
+
+    flash("Усі користувацькі кукі видалено!", "info")
+
+    return response
+
+
+@users_bp.route("/theme/<string:theme_name>")
+@login_required
+def change_theme(theme_name):
+    response = make_response(
+        redirect(url_for("users.profile"))
+    )
+
+    if theme_name in ("light", "dark"):
+        response.set_cookie(
+            "theme",
+            theme_name,
+            max_age=30 * 24 * 60 * 60,
+        )
+
+        flash(
+            f"Тему змінено на {theme_name}!",
+            "success",
+        )
+
+    return response

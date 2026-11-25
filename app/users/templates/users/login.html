@@ -1,0 +1,47 @@
+
+{% extends "base.html" %}
+{% from "macros.html" import render_field %}
+
+{% block content %}
+
+<div class="row justify-content-center mt-4">
+    <div class="col-md-6 col-lg-5">
+
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+
+                <h2 class="mb-4 text-center">
+                    Вхід
+                </h2>
+
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+
+                    {{ render_field(form.email) }}
+                    {{ render_field(form.password) }}
+
+                    <div class="form-check mb-3">
+                        {{ form.remember(class="form-check-input") }}
+                        {{ form.remember.label(class="form-check-label") }}
+                    </div>
+
+                    {{ form.submit(class="btn btn-primary w-100") }}
+                </form>
+
+                <hr>
+
+                <p class="text-center mb-0">
+                    Ще не маєте облікового запису?
+
+                    <a href="{{ url_for('users.register') }}">
+                        Зареєструватися
+                    </a>
+                </p>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

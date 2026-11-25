@@ -1,0 +1,80 @@
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+
+    <div class="container">
+
+        <a
+            class="navbar-brand"
+            href="{{ url_for('homepage') }}"
+        >
+            Flask App
+        </a>
+
+        <button
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarNav"
+            aria-controls="navbarNav"
+            aria-expanded="false"
+            aria-label="Меню"
+        >
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div
+            class="collapse navbar-collapse"
+            id="navbarNav"
+        >
+
+            <div class="navbar-nav ms-auto">
+
+                <a
+                    class="nav-link"
+                    href="{{ url_for('homepage') }}"
+                >
+                    Головна
+                </a>
+
+                <a
+                    class="nav-link"
+                    href="{{ url_for('resume') }}"
+                >
+                    Резюме
+                </a>
+
+                <a
+                    class="nav-link"
+                    href="{{ url_for('contact') }}"
+                >
+                    Контакти
+                </a>
+
+                <a
+                    class="nav-link"
+                    href="{{ url_for('products.product_list') }}"
+                >
+                    Товари
+                </a>
+
+                <a
+                    class="nav-link"
+                    href="{{ url_for('users.login') }}"
+                >
+                    Вхід
+                </a>
+
+                <a
+                    class="nav-link"
+                    href="{{ url_for('users.profile') }}"
+                >
+                    Профіль
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</nav>

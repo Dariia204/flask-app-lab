@@ -23,8 +23,9 @@ class Base(DeclarativeBase):
 app = Flask(__name__)
 app.config.from_object(Config)
 
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///lab7.sqlite"
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///lab8.sqlite"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["SQLALCHEMY_ECHO"] = False
 
 db = SQLAlchemy(model_class=Base)
 db.init_app(app)
@@ -33,9 +34,13 @@ migrate = Migrate(app, db)
 
 from app.products import products_bp
 from app.users import users_bp
+from app.posts import post_bp
+
 from app.products import models
+from app.users import models as user_models
 
 app.register_blueprint(products_bp)
 app.register_blueprint(users_bp)
+app.register_blueprint(post_bp)
 
 from app import views

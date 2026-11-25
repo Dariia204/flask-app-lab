@@ -1,0 +1,68 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8 col-lg-6">
+
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+
+                <h2 class="mb-4">
+                    Обліковий запис
+                </h2>
+
+                <h4>{{ current_user.username }}</h4>
+
+                <hr>
+
+                <p>
+                    <strong>ID:</strong>
+                    {{ current_user.id }}
+                </p>
+
+                <p>
+                    <strong>Ім'я користувача:</strong>
+                    {{ current_user.username }}
+                </p>
+
+                <p>
+                    <strong>Електронна пошта:</strong>
+                    {{ current_user.email }}
+                </p>
+
+                <p>
+                    <strong>Кількість дописів:</strong>
+                    {{ current_user.posts|length }}
+                </p>
+
+                <p>
+                    <strong>Статус:</strong>
+
+                    <span class="badge bg-success">
+                        Авторизований
+                    </span>
+                </p>
+
+                <div class="d-flex gap-2 flex-wrap">
+
+                    <a href="{{ url_for('users.profile') }}"
+                       class="btn btn-outline-primary">
+                        Налаштування профілю
+                    </a>
+
+                    <a href="{{ url_for('users.logout') }}"
+                       class="btn btn-outline-danger">
+                        Вийти
+                    </a>
+
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

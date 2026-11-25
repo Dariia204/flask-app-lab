@@ -1,12 +1,12 @@
 
 <!DOCTYPE html>
 <html lang="uk">
+
 <head>
     <meta charset="UTF-8">
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1"
-    >
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
 
     <title>{{ title or "Flask App" }}</title>
 
@@ -19,6 +19,10 @@
         rel="stylesheet"
         href="{{ url_for('static', filename='css/style.css') }}"
     >
+
+    {% block css %}
+    {% endblock %}
+
 </head>
 
 <body class="d-flex flex-column min-vh-100">
@@ -28,12 +32,14 @@
     <main class="container py-4 flex-grow-1">
 
         {% with messages = get_flashed_messages(with_categories=true) %}
+
             {% for category, message in messages %}
 
                 <div
                     class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show"
                     role="alert"
                 >
+
                     {{ message }}
 
                     <button
@@ -42,9 +48,11 @@
                         data-bs-dismiss="alert"
                         aria-label="Закрити"
                     ></button>
+
                 </div>
 
             {% endfor %}
+
         {% endwith %}
 
         {% block content %}

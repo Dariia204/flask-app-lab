@@ -1,12 +1,13 @@
 
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import check_password_hash
+from flask_login import UserMixin
 
-from app import db
+from app import db, bcrypt, login_manager
 
 
-class User(db.Model):
+class User(db.Model, UserMixin):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(
@@ -36,10 +37,33 @@ class User(db.Model):
     )
 
     def set_password(self, password):
-        self.password = generate_password_hash(password)
+        self.password = bcrypt.generate_password_hash(
+            password
+        ).decode("utf-8")
 
     def check_password(self, password):
-        return check_password_hash(self.password, password)
+        try:
+            if self.password.startswith(("$2a$", "$2b$", "$2y$")):
+                return bcrypt.check_password_hash(
+                    self.password,
+                    password
+                )
+
+            return check_password_hash(
+                self.password,
+                password
+            )
+
+        except (ValueError, TypeError):
+            return False
 
     def __repr__(self):
         return f"<User {self.username}>"
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    try:
+        return db.session.get(User, int(user_id))
+    except (ValueError, TypeError):
+        return None

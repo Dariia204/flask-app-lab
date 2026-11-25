@@ -1,7 +1,9 @@
-
+import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from flask_bcrypt import Bcrypt
+from flask_login import LoginManager
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy import MetaData
 
@@ -23,7 +25,10 @@ class Base(DeclarativeBase):
 app = Flask(__name__)
 app.config.from_object(Config)
 
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///lab8.sqlite"
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
+    "TEST_DATABASE_URI",
+    "sqlite:///lab9.sqlite"
+)
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ECHO"] = False
 
@@ -31,6 +36,20 @@ db = SQLAlchemy(model_class=Base)
 db.init_app(app)
 
 migrate = Migrate(app, db)
+
+bcrypt = Bcrypt()
+bcrypt.init_app(app)
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+login_manager.login_view = "users.login"
+
+login_manager.login_message = (
+    "Будь ласка, увійдіть у систему для доступу до цієї сторінки."
+)
+
+login_manager.login_message_category = "warning"
 
 from app.products import products_bp
 from app.users import users_bp

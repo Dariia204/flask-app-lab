@@ -6,6 +6,7 @@ from flask import (
     flash,
     request,
     abort,
+    current_app,
 )
 
 from flask_login import current_user, login_required
@@ -16,6 +17,28 @@ from app import db
 from app.posts import post_bp
 from app.posts.models import Post, Tag, Comment, Like
 from app.posts.forms import PostForm, CommentForm
+from app.users.models import User
+from app.notifications import notify_like, notify_comment
+
+from app.posts.utils import (
+    save_image,
+    delete_image,
+    render_markdown,
+)
+
+
+@post_bp.app_template_filter("markdown")
+def markdown_filter(content):
+    return render_markdown(content)
+
+
+def cleanup_image(filename):
+    try:
+        delete_image(filename)
+    except OSError:
+        current_app.logger.exception(
+            "Image cleanup failed"
+        )
 
 
 def set_form_choices(form):
@@ -58,6 +81,13 @@ def get_visible_post(id):
 @post_bp.route("/")
 @post_bp.route("")
 def all_posts():
+    return render_feed(personal=False)
+
+
+def render_feed(personal=False):
+    q = request.args.get("q", "").strip()[:150]
+    page = request.args.get("page", 1, type=int)
+
     stmt = (
         db.select(Post)
         .options(
@@ -67,15 +97,65 @@ def all_posts():
             selectinload(Post.comments)
         )
         .where(Post.is_active.is_(True))
-        .order_by(Post.posted.desc())
     )
 
-    posts = db.session.scalars(stmt).all()
+    if personal:
+        following_ids = [
+            user.id for user in current_user.following
+        ]
+
+        following_ids.append(current_user.id)
+
+        stmt = stmt.where(
+            Post.user_id.in_(following_ids)
+        )
+
+    if q:
+        stmt = stmt.where(
+            db.or_(
+                Post.title.icontains(
+                    q, autoescape=True
+                ),
+                Post.content.icontains(
+                    q, autoescape=True
+                ),
+                Post.user.has(
+                    db.or_(
+                        User.username.icontains(
+                            q, autoescape=True
+                        ),
+                        User.full_name.icontains(
+                            q, autoescape=True
+                        )
+                    )
+                ),
+                Post.tags.any(
+                    Tag.name.icontains(
+                        q, autoescape=True
+                    )
+                )
+            )
+        )
+
+    stmt = stmt.order_by(
+        Post.posted.desc(),
+        Post.id.desc()
+    )
+
+    pagination = db.paginate(
+        stmt,
+        page=max(1, page),
+        per_page=6,
+        error_out=False
+    )
 
     return render_template(
         "posts/all_posts.html",
-        posts=posts,
-        title="Стрічка публікацій"
+        posts=pagination.items,
+        pagination=pagination,
+        q=q,
+        personal=personal,
+        title="Моя стрічка" if personal else "Публікації"
     )
 
 
@@ -86,25 +166,43 @@ def create_post():
     set_form_choices(form)
 
     if form.validate_on_submit():
-        post = Post(
-            title=form.title.data,
-            content=form.content.data,
-            category=form.category.data,
-            posted=form.posted.data,
-            is_active=form.is_active.data,
-            user_id=current_user.id
-        )
 
-        post.tags = get_selected_tags(form)
+        try:
+            image_name = save_image(form.image.data)
 
-        db.session.add(post)
-        db.session.commit()
+        except ValueError as error:
+            form.image.errors.append(str(error))
 
-        flash("Публікацію успішно створено!", "success")
+        else:
+            post = Post(
+                title=form.title.data,
+                content=form.content.data,
+                category=form.category.data,
+                posted=form.posted.data,
+                is_active=form.is_active.data,
+                user_id=current_user.id,
+                image=image_name
+            )
 
-        return redirect(
-            url_for("posts.detail_post", id=post.id)
-        )
+            post.tags = get_selected_tags(form)
+
+            try:
+                db.session.add(post)
+                db.session.commit()
+
+            except Exception:
+                db.session.rollback()
+                cleanup_image(image_name)
+                raise
+
+            flash(
+                "Публікацію успішно створено!",
+                "success"
+            )
+
+            return redirect(
+                url_for("posts.detail_post", id=post.id)
+            )
 
     return render_template(
         "posts/add_post.html",
@@ -163,20 +261,45 @@ def update_post(id):
     set_form_choices(form)
 
     if form.validate_on_submit():
-        post.title = form.title.data
-        post.content = form.content.data
-        post.category = form.category.data
-        post.posted = form.posted.data
-        post.is_active = form.is_active.data
-        post.tags = get_selected_tags(form)
 
-        db.session.commit()
+        old_image = post.image
 
-        flash("Публікацію оновлено!", "success")
+        try:
+            new_image = save_image(form.image.data)
 
-        return redirect(
-            url_for("posts.detail_post", id=post.id)
-        )
+        except ValueError as error:
+            form.image.errors.append(str(error))
+
+        else:
+            post.title = form.title.data
+            post.content = form.content.data
+            post.category = form.category.data
+            post.posted = form.posted.data
+            post.is_active = form.is_active.data
+            post.tags = get_selected_tags(form)
+
+            if new_image:
+                post.image = new_image
+
+            elif form.remove_image.data:
+                post.image = None
+
+            try:
+                db.session.commit()
+
+            except Exception:
+                db.session.rollback()
+                cleanup_image(new_image)
+                raise
+
+            if old_image != post.image:
+                cleanup_image(old_image)
+
+            flash("Публікацію оновлено!", "success")
+
+            return redirect(
+                url_for("posts.detail_post", id=post.id)
+            )
 
     return render_template(
         "posts/add_post.html",
@@ -198,12 +321,19 @@ def delete_post(id):
     form = FlaskForm()
 
     if form.validate_on_submit():
+
+        image_name = post.image
+
         db.session.delete(post)
         db.session.commit()
 
+        cleanup_image(image_name)
+
         flash("Публікацію видалено!", "success")
 
-        return redirect(url_for("posts.all_posts"))
+        return redirect(
+            url_for("posts.all_posts")
+        )
 
     return render_template(
         "posts/delete_confirm.html",
@@ -227,6 +357,7 @@ def toggle_like(id):
 
     if like:
         db.session.delete(like)
+
     else:
         db.session.add(
             Like(
@@ -236,6 +367,9 @@ def toggle_like(id):
         )
 
     db.session.commit()
+
+    if like is None:
+        notify_like(post, current_user)
 
     return redirect(
         url_for("posts.detail_post", id=post.id)
@@ -258,7 +392,10 @@ def add_comment(id):
         db.session.add(comment)
         db.session.commit()
 
+        notify_comment(post, current_user, comment)
+
         flash("Коментар додано!", "success")
+
     else:
         flash("Перевірте текст коментаря.", "danger")
 
@@ -331,35 +468,8 @@ def delete_comment(id):
         url_for("posts.detail_post", id=post_id)
     )
 
+
 @post_bp.route("/feed")
 @login_required
 def personal_feed():
-    following_ids = [
-        user.id for user in current_user.following
-    ]
-
-    following_ids.append(current_user.id)
-
-    stmt = (
-        db.select(Post)
-        .options(
-            joinedload(Post.user),
-            selectinload(Post.tags),
-            selectinload(Post.likes),
-            selectinload(Post.comments)
-        )
-        .where(
-            Post.is_active.is_(True),
-            Post.user_id.in_(following_ids)
-        )
-        .order_by(Post.posted.desc())
-    )
-
-    posts = db.session.scalars(stmt).all()
-
-    return render_template(
-        "posts/all_posts.html",
-        posts=posts,
-        personal=True,
-        title="Моя стрічка"
-    )
+    return render_feed(personal=True)

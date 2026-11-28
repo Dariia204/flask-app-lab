@@ -41,6 +41,15 @@
                     Користувачі
                 </a>
 
+                {% if current_user.is_admin %}
+
+                <a class="nav-link text-warning fw-bold"
+                   href="{{ url_for('admin.dashboard') }}">
+                    ⚙ Адмін-панель
+                </a>
+
+                {% endif %}
+
                 {% endif %}
 
                 <div class="nav-item dropdown">

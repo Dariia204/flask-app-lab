@@ -6,8 +6,40 @@
 <h1>Користувачі</h1>
 
 <p class="text-muted mb-4">
-    Зареєстровано користувачів: {{ count }}
+    {% if q %}
+        Знайдено користувачів: {{ count }}
+    {% else %}
+        Зареєстровано користувачів: {{ count }}
+    {% endif %}
 </p>
+
+<form method="GET"
+      action="{{ url_for('users.all_users') }}"
+      class="mb-4">
+
+    <div class="input-group">
+
+        <input type="search"
+               name="q"
+               value="{{ q }}"
+               maxlength="150"
+               class="form-control"
+               placeholder="Пошук за логіном або ім'ям...">
+
+        <button type="submit" class="btn btn-primary">
+            Знайти
+        </button>
+
+        {% if q %}
+        <a href="{{ url_for('users.all_users') }}"
+           class="btn btn-outline-secondary">
+            Скинути
+        </a>
+        {% endif %}
+
+    </div>
+
+</form>
 
 <div class="row g-3">
 
@@ -16,13 +48,16 @@
     <div class="col-md-6 col-lg-4">
 
         <div class="card shadow-sm h-100">
+
             <div class="card-body text-center">
 
                 <div class="rounded-circle bg-primary text-white
                             d-inline-flex align-items-center
                             justify-content-center mb-3"
                      style="width: 65px; height: 65px; font-size: 28px;">
+
                     {{ user.username[0]|upper }}
+
                 </div>
 
                 <h5>{{ user.full_name or user.username }}</h5>
@@ -30,9 +65,9 @@
                 <p class="text-muted">@{{ user.username }}</p>
 
                 <p>
-                    Публікації: {{ user.posts|length }}
-                    <br>
                     Підписники: {{ user.followers|length }}
+                    <br>
+                    Підписки: {{ user.following|length }}
                 </p>
 
                 {% if user.id == current_user.id %}
@@ -46,22 +81,84 @@
 
                 <a href="{{ url_for('users.public_profile', user_id=user.id) }}"
                    class="btn btn-outline-primary">
-                    Переглянути профіль
+
+                    {% if user in current_user.following %}
+                        ✓ Ви підписані
+                    {% else %}
+                        Переглянути профіль
+                    {% endif %}
+
                 </a>
 
                 {% endif %}
 
             </div>
+
         </div>
 
     </div>
 
     {% else %}
 
-    <p>Користувачі відсутні.</p>
+    <div class="col-12">
+        <div class="alert alert-info">
+            Користувачів не знайдено.
+        </div>
+    </div>
 
     {% endfor %}
 
 </div>
+
+{% if pagination.pages > 1 %}
+
+<nav class="mt-4" aria-label="Сторінки користувачів">
+
+    <ul class="pagination justify-content-center flex-wrap">
+
+        {% if pagination.has_prev %}
+        <li class="page-item">
+            <a class="page-link"
+               href="{{ url_for('users.all_users', page=pagination.prev_num, q=q) }}">
+                Назад
+            </a>
+        </li>
+        {% endif %}
+
+        {% for number in pagination.iter_pages() %}
+
+            {% if number %}
+
+            <li class="page-item {% if number == pagination.page %}active{% endif %}">
+                <a class="page-link"
+                   href="{{ url_for('users.all_users', page=number, q=q) }}">
+                    {{ number }}
+                </a>
+            </li>
+
+            {% else %}
+
+            <li class="page-item disabled">
+                <span class="page-link">…</span>
+            </li>
+
+            {% endif %}
+
+        {% endfor %}
+
+        {% if pagination.has_next %}
+        <li class="page-item">
+            <a class="page-link"
+               href="{{ url_for('users.all_users', page=pagination.next_num, q=q) }}">
+                Далі
+            </a>
+        </li>
+        {% endif %}
+
+    </ul>
+
+</nav>
+
+{% endif %}
 
 {% endblock %}

@@ -19,3 +19,110 @@
 .post-tag:hover {
     background-color: #c7d2fe;
 }
+
+.post-card {
+    overflow: hidden;
+    border-radius: 14px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.post-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.post-image {
+    width: 100%;
+    height: 210px;
+    object-fit: cover;
+}
+
+.post-detail {
+    max-width: 850px;
+}
+
+.post-detail-image {
+    display: block;
+    width: 100%;
+    max-height: 550px;
+    object-fit: contain;
+    border-radius: 12px;
+    background: #f1f3f5;
+}
+
+.editor-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    padding: 8px;
+    background: #f1f3f5;
+    border: 1px solid #dee2e6;
+    border-radius: 8px 8px 0 0;
+}
+
+.editor-toolbar button {
+    min-width: 36px;
+    padding: 6px 10px;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    background: transparent;
+    color: #212529;
+    cursor: pointer;
+}
+
+.editor-toolbar button:hover {
+    background: #ffffff;
+    border-color: #ced4da;
+}
+
+.editor-content {
+    border-radius: 0 0 8px 8px;
+    min-height: 200px;
+    resize: vertical;
+}
+
+.upload-preview {
+    max-width: 100%;
+    max-height: 300px;
+    object-fit: contain;
+    border-radius: 10px;
+}
+
+.post-content {
+    line-height: 1.75;
+    overflow-wrap: anywhere;
+}
+
+.post-content h1,
+.post-content h2,
+.post-content h3 {
+    margin-top: 24px;
+    margin-bottom: 14px;
+}
+
+.post-content pre {
+    padding: 16px;
+    border-radius: 8px;
+    background: #212529;
+    color: #f8f9fa;
+    overflow-x: auto;
+}
+
+.post-content blockquote {
+    border-left: 4px solid #0d6efd;
+    background: #f1f5f9;
+    padding: 12px 16px;
+    border-radius: 4px;
+}
+
+.post-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+}
+
+.post-content td,
+.post-content th {
+    border: 1px solid #dee2e6;
+    padding: 8px;
+}

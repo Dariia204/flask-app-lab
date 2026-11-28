@@ -1,6 +1,8 @@
 
 from datetime import datetime
+
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileField, FileAllowed
 
 from wtforms import (
     StringField,
@@ -22,13 +24,19 @@ from wtforms.validators import (
 class PostForm(FlaskForm):
     title = StringField(
         "Заголовок",
-        validators=[DataRequired(), Length(min=3, max=150)]
+        validators=[
+            DataRequired(),
+            Length(min=3, max=150)
+        ]
     )
 
     content = TextAreaField(
         "Текст публікації",
-        validators=[DataRequired(), Length(min=5, max=10000)],
-        render_kw={"rows": 6}
+        validators=[
+            DataRequired(),
+            Length(min=5, max=10000)
+        ],
+        render_kw={"rows": 8}
     )
 
     is_active = BooleanField(
@@ -58,6 +66,20 @@ class PostForm(FlaskForm):
         "Теги",
         coerce=int,
         render_kw={"size": 4}
+    )
+
+    image = FileField(
+        "Зображення публікації",
+        validators=[
+            FileAllowed(
+                ["jpg", "jpeg", "png", "webp"],
+                "Дозволені лише JPG, PNG та WEBP."
+            )
+        ]
+    )
+
+    remove_image = BooleanField(
+        "Видалити поточне зображення"
     )
 
     submit = SubmitField("Зберегти")

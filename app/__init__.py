@@ -1,9 +1,12 @@
+
 import os
+
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
+
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy import MetaData
 
@@ -11,6 +14,7 @@ from config import Config
 
 
 class Base(DeclarativeBase):
+
     metadata = MetaData(
         naming_convention={
             "ix": "ix_%(column_0_label)s",
@@ -23,14 +27,17 @@ class Base(DeclarativeBase):
 
 
 app = Flask(__name__)
+
 app.config.from_object(Config)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
     "TEST_DATABASE_URI",
     "sqlite:///final.sqlite"
 )
+
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ECHO"] = False
+
 
 db = SQLAlchemy(model_class=Base)
 db.init_app(app)
@@ -51,15 +58,21 @@ login_manager.login_message = (
 
 login_manager.login_message_category = "warning"
 
+
 from app.products import products_bp
 from app.users import users_bp
 from app.posts import post_bp
+from app.admin import admin_bp
 
 from app.products import models
 from app.users import models as user_models
 
+
 app.register_blueprint(products_bp)
 app.register_blueprint(users_bp)
 app.register_blueprint(post_bp)
+app.register_blueprint(admin_bp)
+
 
 from app import views
+from app import errors

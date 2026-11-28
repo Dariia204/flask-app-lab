@@ -151,17 +151,36 @@ def account():
 @users_bp.route("/users")
 @login_required
 def all_users():
-    users = db.session.scalars(
-        db.select(User).order_by(User.id)
-    ).all()
+    q = request.args.get("q", "").strip()[:150]
+    page = request.args.get("page", 1, type=int)
+
+    stmt = db.select(User)
+
+    if q:
+        stmt = stmt.where(
+            db.or_(
+                User.username.icontains(q, autoescape=True),
+                User.full_name.icontains(q, autoescape=True)
+            )
+        )
+
+    stmt = stmt.order_by(User.id)
+
+    pagination = db.paginate(
+        stmt,
+        page=max(1, page),
+        per_page=6,
+        error_out=False
+    )
 
     return render_template(
         "users/all_users.html",
-        users=users,
-        count=len(users),
-        title="Користувачі",
+        users=pagination.items,
+        count=pagination.total,
+        pagination=pagination,
+        q=q,
+        title="ористувачі"
     )
-
 
 @users_bp.route("/profile")
 @login_required

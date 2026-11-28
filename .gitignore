@@ -23,3 +23,10 @@ app/products/static/uploads/
 
 # Файли редактора
 .vscode/
+
+# SocialSpace local data
+instance/final.sqlite
+instance/final.sqlite-*
+app/posts/static/uploads/
+.env.*
+!.env.example

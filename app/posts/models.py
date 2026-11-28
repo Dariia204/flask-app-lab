@@ -2,13 +2,8 @@
 from datetime import datetime, timezone
 
 from sqlalchemy import (
-    String,
-    Text,
-    DateTime,
-    Enum,
-    Boolean,
-    ForeignKey,
-    text,
+    String, Text, DateTime, Enum,
+    Boolean, ForeignKey, text
 )
 
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -16,20 +11,22 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app import db
 
 
+def utc_now():
+    return datetime.now(timezone.utc).replace(tzinfo=None)
+
+
 post_tags = db.Table(
     "post_tags",
     db.Column(
-        "post_id",
-        db.Integer,
+        "post_id", db.Integer,
         db.ForeignKey("posts.id"),
         primary_key=True
     ),
     db.Column(
-        "tag_id",
-        db.Integer,
+        "tag_id", db.Integer,
         db.ForeignKey("tags.id"),
         primary_key=True
-    ),
+    )
 )
 
 
@@ -39,20 +36,15 @@ class Post(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
 
     title: Mapped[str] = mapped_column(
-        String(150),
-        nullable=False
+        String(150), nullable=False
     )
 
     content: Mapped[str] = mapped_column(
-        Text,
-        nullable=False
+        Text, nullable=False
     )
 
     posted: Mapped[datetime] = mapped_column(
-        DateTime,
-        default=lambda: datetime.now(
-            timezone.utc
-        ).replace(tzinfo=None)
+        DateTime, default=utc_now
     )
 
     category: Mapped[str] = mapped_column(
@@ -68,19 +60,33 @@ class Post(db.Model):
         nullable=False
     )
 
+    image: Mapped[str | None] = mapped_column(
+        String(255), nullable=True
+    )
+
     user_id: Mapped[int] = mapped_column(
-        ForeignKey("users.id"),
-        nullable=False
+        ForeignKey("users.id"), nullable=False
     )
 
     user: Mapped["User"] = relationship(
-        "User",
-        back_populates="posts"
+        "User", back_populates="posts"
     )
 
     tags: Mapped[list["Tag"]] = relationship(
         secondary=post_tags,
         back_populates="posts"
+    )
+
+    comments: Mapped[list["Comment"]] = relationship(
+        "Comment",
+        back_populates="post",
+        cascade="all, delete-orphan"
+    )
+
+    likes: Mapped[list["Like"]] = relationship(
+        "Like",
+        back_populates="post",
+        cascade="all, delete-orphan"
     )
 
     def __repr__(self):
@@ -90,14 +96,10 @@ class Post(db.Model):
 class Tag(db.Model):
     __tablename__ = "tags"
 
-    id: Mapped[int] = mapped_column(
-        primary_key=True
-    )
+    id: Mapped[int] = mapped_column(primary_key=True)
 
     name: Mapped[str] = mapped_column(
-        String(50),
-        unique=True,
-        nullable=False
+        String(50), unique=True, nullable=False
     )
 
     posts: Mapped[list["Post"]] = relationship(
@@ -107,3 +109,49 @@ class Tag(db.Model):
 
     def __repr__(self):
         return f"<Tag {self.name}>"
+
+
+class Comment(db.Model):
+    __tablename__ = "comments"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    content: Mapped[str] = mapped_column(
+        Text, nullable=False
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=utc_now
+    )
+
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id"), nullable=False
+    )
+
+    post_id: Mapped[int] = mapped_column(
+        ForeignKey("posts.id"), nullable=False
+    )
+
+    user: Mapped["User"] = relationship("User")
+
+    post: Mapped["Post"] = relationship(
+        "Post", back_populates="comments"
+    )
+
+
+class Like(db.Model):
+    __tablename__ = "likes"
+
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id"), primary_key=True
+    )
+
+    post_id: Mapped[int] = mapped_column(
+        ForeignKey("posts.id"), primary_key=True
+    )
+
+    user: Mapped["User"] = relationship("User")
+
+    post: Mapped["Post"] = relationship(
+        "Post", back_populates="likes"
+    )

@@ -6,6 +6,7 @@ from wtforms import (
     PasswordField,
     BooleanField,
     SubmitField,
+    TextAreaField,
 )
 
 from wtforms.validators import (
@@ -14,6 +15,7 @@ from wtforms.validators import (
     Email,
     EqualTo,
     ValidationError,
+    Optional,
 )
 
 from app import db
@@ -70,7 +72,7 @@ class RegistrationForm(FlaskForm):
     def validate_username(self, username):
         user = db.session.scalar(
             db.select(User).where(
-                User.username == username.data
+                User.username == username.data.strip()
             )
         )
 
@@ -82,7 +84,7 @@ class RegistrationForm(FlaskForm):
     def validate_email(self, email):
         user = db.session.scalar(
             db.select(User).where(
-                User.email == email.data.lower()
+                User.email == email.data.strip().lower()
             )
         )
 
@@ -109,3 +111,18 @@ class LoginForm(FlaskForm):
     remember = BooleanField("Запам'ятати мене")
 
     submit = SubmitField("Увійти")
+
+
+class ProfileForm(FlaskForm):
+    full_name = StringField(
+        "Повне ім'я",
+        validators=[Optional(), Length(max=100)]
+    )
+
+    bio = TextAreaField(
+        "Про себе",
+        validators=[Optional(), Length(max=1000)],
+        render_kw={"rows": 4}
+    )
+
+    submit = SubmitField("Зберегти профіль")

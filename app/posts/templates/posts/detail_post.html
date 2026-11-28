@@ -7,78 +7,188 @@
 {% endblock %}
 
 {% block content %}
+
 <div class="post-detail mx-auto">
 
     <a href="{{ url_for('posts.all_posts') }}"
        class="btn btn-outline-secondary mb-4">
-        Назад до постів
+        ← До стрічки
     </a>
 
-    <div class="card shadow-sm">
+    <div class="card shadow-sm mb-4">
         <div class="card-body p-4">
 
-            <h1 class="mb-3">{{ post.title }}</h1>
+            <h1>{{ post.title }}</h1>
 
             <p class="text-muted">
-                Автор: {{ post.user.username }}
-            </p>
-
-            <p class="text-muted">
-                Дата:
+                Автор:
+{% if current_user.is_authenticated %}
+    <a href="{{ url_for('users.public_profile', user_id=post.user_id) }}">
+        {{ post.user.username }}
+    </a>
+{% else %}
+    <strong>{{ post.user.username }}</strong>
+{% endif %}
+                <br>
                 {{ post.posted.strftime('%d.%m.%Y %H:%M') }}
             </p>
 
-            <p>
-                Категорія:
-                <span class="badge bg-primary">
-                    {{ post.category }}
-                </span>
-            </p>
+            <span class="badge bg-primary">
+                {{ post.category }}
+            </span>
 
-            <p>
-                Статус:
-                {% if post.is_active %}
-                    <span class="text-success">Активний</span>
-                {% else %}
-                    <span class="text-secondary">Неактивний</span>
-                {% endif %}
-            </p>
+            {% if not post.is_active %}
+            <span class="badge bg-secondary">Неактивна</span>
+            {% endif %}
 
-            <div class="mb-3">
-                <strong>Теги:</strong>
-
-                <div class="post-tags mt-2">
-                    {% for tag in post.tags %}
-                        <span class="post-tag">
-                            #{{ tag.name }}
-                        </span>
-                    {% else %}
-                        <span class="text-muted">
-                            Теги відсутні
-                        </span>
-                    {% endfor %}
-                </div>
+            <div class="post-tags my-3">
+                {% for tag in post.tags %}
+                <span class="post-tag">#{{ tag.name }}</span>
+                {% endfor %}
             </div>
 
             <hr>
 
-            <div class="post-content mb-4">
-                {{ post.content }}
-            </div>
+            <div class="post-content mb-4"
+                 style="white-space: pre-wrap; overflow-wrap: anywhere;">{{ post.content }}</div>
 
-            <div class="d-flex gap-2">
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+
+                {% if current_user.is_authenticated %}
+
+                <form method="POST"
+                      action="{{ url_for('posts.toggle_like', id=post.id) }}">
+
+                    {{ action_form.hidden_tag() }}
+
+                    <button type="submit"
+                            class="btn {% if liked %}btn-danger{% else %}btn-outline-danger{% endif %}">
+                        ❤️ {{ post.likes|length }}
+                        {% if liked %}
+                            Подобається
+                        {% else %}
+                            Лайк
+                        {% endif %}
+                    </button>
+
+                </form>
+
+                {% else %}
+
+                <span>❤️ {{ post.likes|length }}</span>
+
+                {% endif %}
+
+                <span>💬 {{ comments|length }}</span>
+
+                {% if current_user.is_authenticated and
+                      (current_user.id == post.user_id or current_user.is_admin) %}
+
                 <a href="{{ url_for('posts.update_post', id=post.id) }}"
-                   class="btn btn-warning">
-                    Edit
+                   class="btn btn-outline-warning">
+                    Редагувати
                 </a>
 
                 <a href="{{ url_for('posts.delete_post', id=post.id) }}"
-                   class="btn btn-danger">
-                    Delete
+                   class="btn btn-outline-danger">
+                    Видалити
                 </a>
+
+                {% endif %}
+
             </div>
 
         </div>
     </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body p-4">
+
+            <h4 class="mb-4">
+                Коментарі ({{ comments|length }})
+            </h4>
+
+            {% if current_user.is_authenticated %}
+
+            <form method="POST"
+                  action="{{ url_for('posts.add_comment', id=post.id) }}"
+                  class="mb-4">
+
+                {{ comment_form.hidden_tag() }}
+
+                {{ comment_form.content(class="form-control mb-2") }}
+
+                <button class="btn btn-primary" type="submit">
+                    Надіслати коментар
+                </button>
+
+            </form>
+
+            {% else %}
+
+            <div class="alert alert-info">
+                <a href="{{ url_for('users.login') }}">Увійдіть</a>,
+                щоб залишити коментар або лайк.
+            </div>
+
+            {% endif %}
+
+            {% for comment in comments %}
+
+            <div class="border rounded p-3 mb-3">
+
+                <div class="d-flex justify-content-between flex-wrap">
+
+                    <strong>{{ comment.user.username }}</strong>
+
+                    <small class="text-muted">
+                        {{ comment.created_at.strftime('%d.%m.%Y %H:%M') }}
+                    </small>
+
+                </div>
+
+                <p class="my-2" style="white-space: pre-wrap; overflow-wrap: anywhere;">{{ comment.content }}</p>
+
+                {% if current_user.is_authenticated and
+                      (current_user.id == comment.user_id or current_user.is_admin) %}
+
+                <div class="d-flex gap-2">
+
+                    <a href="{{ url_for('posts.edit_comment', id=comment.id) }}"
+                       class="btn btn-sm btn-outline-secondary">
+                        Редагувати
+                    </a>
+
+                    <form method="POST"
+                          action="{{ url_for('posts.delete_comment', id=comment.id) }}"
+                          onsubmit="return confirm('Видалити коментар?')">
+
+                        {{ action_form.hidden_tag() }}
+
+                        <button type="submit"
+                                class="btn btn-sm btn-outline-danger">
+                            Видалити
+                        </button>
+
+                    </form>
+
+                </div>
+
+                {% endif %}
+
+            </div>
+
+            {% else %}
+
+            <p class="text-muted">
+                Коментарів ще немає.
+            </p>
+
+            {% endfor %}
+
+        </div>
+    </div>
+
 </div>
+
 {% endblock %}

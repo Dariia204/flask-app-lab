@@ -274,3 +274,110 @@ def change_theme(theme_name):
         )
 
     return response
+
+
+from flask import abort
+from flask_wtf import FlaskForm
+from app.users.forms import ProfileForm
+from app.posts.models import Post
+
+
+@users_bp.route("/account/edit", methods=["GET", "POST"])
+@login_required
+def edit_account():
+    form = ProfileForm(obj=current_user)
+
+    if form.validate_on_submit():
+        current_user.full_name = (form.full_name.data or "").strip()
+        current_user.bio = (form.bio.data or "").strip()
+
+        db.session.commit()
+
+        flash("рофіль успішно оновлено!", "success")
+
+        return redirect(url_for("users.account"))
+
+    return render_template(
+        "users/edit_account.html",
+        form=form,
+        title="едагування профілю"
+    )
+
+
+@users_bp.route("/user/<int:user_id>")
+@login_required
+def public_profile(user_id):
+    user = db.get_or_404(User, user_id)
+
+    stmt = db.select(Post).where(
+        Post.user_id == user.id
+    )
+
+    if current_user.id != user.id and not current_user.is_admin:
+        stmt = stmt.where(Post.is_active.is_(True))
+
+    posts = db.session.scalars(
+        stmt.order_by(Post.posted.desc())
+    ).all()
+
+    return render_template(
+        "users/public_profile.html",
+        user=user,
+        posts=posts,
+        action_form=FlaskForm(),
+        title=user.username
+    )
+
+
+@users_bp.route("/user/<int:user_id>/follow", methods=["POST"])
+@login_required
+def toggle_follow(user_id):
+    user = db.get_or_404(User, user_id)
+
+    if not FlaskForm().validate_on_submit():
+        abort(400)
+
+    if user.id == current_user.id:
+        abort(400)
+
+    if user in current_user.following:
+        current_user.following.remove(user)
+        flash("и відписалися від користувача.", "info")
+    else:
+        current_user.following.append(user)
+        flash("и підписалися на користувача!", "success")
+
+    db.session.commit()
+
+    return redirect(
+        url_for("users.public_profile", user_id=user.id)
+    )
+
+
+@users_bp.route("/user/<int:user_id>/followers")
+@login_required
+def followers_list(user_id):
+    user = db.get_or_404(User, user_id)
+
+    return render_template(
+        "users/connections.html",
+        user=user,
+        users=user.followers,
+        heading="ідписники",
+        title="ідписники"
+    )
+
+
+@users_bp.route("/user/<int:user_id>/following")
+@login_required
+def following_list(user_id):
+    user = db.get_or_404(User, user_id)
+
+    return render_template(
+        "users/connections.html",
+        user=user,
+        users=user.following,
+        heading="ідписки",
+        title="ідписки"
+    )
+

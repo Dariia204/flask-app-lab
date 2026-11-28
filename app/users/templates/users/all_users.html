@@ -3,48 +3,64 @@
 
 {% block content %}
 
-<h1 class="mb-4">
-    Зареєстровані користувачі
-</h1>
+<h1>Користувачі</h1>
 
-<div class="card shadow-sm mb-4">
-    <div class="card-body">
-        <h5>Загальна кількість користувачів</h5>
-        <h2 class="text-primary">{{ count }}</h2>
+<p class="text-muted mb-4">
+    Зареєстровано користувачів: {{ count }}
+</p>
+
+<div class="row g-3">
+
+    {% for user in users %}
+
+    <div class="col-md-6 col-lg-4">
+
+        <div class="card shadow-sm h-100">
+            <div class="card-body text-center">
+
+                <div class="rounded-circle bg-primary text-white
+                            d-inline-flex align-items-center
+                            justify-content-center mb-3"
+                     style="width: 65px; height: 65px; font-size: 28px;">
+                    {{ user.username[0]|upper }}
+                </div>
+
+                <h5>{{ user.full_name or user.username }}</h5>
+
+                <p class="text-muted">@{{ user.username }}</p>
+
+                <p>
+                    Публікації: {{ user.posts|length }}
+                    <br>
+                    Підписники: {{ user.followers|length }}
+                </p>
+
+                {% if user.id == current_user.id %}
+
+                <a href="{{ url_for('users.account') }}"
+                   class="btn btn-outline-secondary">
+                    Мій профіль
+                </a>
+
+                {% else %}
+
+                <a href="{{ url_for('users.public_profile', user_id=user.id) }}"
+                   class="btn btn-outline-primary">
+                    Переглянути профіль
+                </a>
+
+                {% endif %}
+
+            </div>
+        </div>
+
     </div>
-</div>
 
-<div class="table-responsive">
+    {% else %}
 
-    <table class="table table-striped table-hover">
+    <p>Користувачі відсутні.</p>
 
-        <thead class="table-dark">
-            <tr>
-                <th>ID</th>
-                <th>Ім'я користувача</th>
-                <th>Кількість дописів</th>
-            </tr>
-        </thead>
-
-        <tbody>
-
-            {% for user in users %}
-            <tr>
-                <td>{{ user.id }}</td>
-                <td>{{ user.username }}</td>
-                <td>{{ user.posts|length }}</td>
-            </tr>
-            {% else %}
-            <tr>
-                <td colspan="3" class="text-center">
-                    Користувачі відсутні
-                </td>
-            </tr>
-            {% endfor %}
-
-        </tbody>
-
-    </table>
+    {% endfor %}
 
 </div>
 

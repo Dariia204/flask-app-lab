@@ -1,6 +1,5 @@
 
 from datetime import datetime
-
 from flask_wtf import FlaskForm
 
 from wtforms import (
@@ -23,31 +22,25 @@ from wtforms.validators import (
 class PostForm(FlaskForm):
     title = StringField(
         "Заголовок",
-        validators=[
-            DataRequired(),
-            Length(min=3, max=150),
-        ],
+        validators=[DataRequired(), Length(min=3, max=150)]
     )
 
     content = TextAreaField(
-        "Текст поста",
-        validators=[
-            DataRequired(),
-            Length(min=5),
-        ],
-        render_kw={"rows": 6},
+        "Текст публікації",
+        validators=[DataRequired(), Length(min=5, max=10000)],
+        render_kw={"rows": 6}
     )
 
     is_active = BooleanField(
-        "Активний пост",
-        default=True,
+        "Активна публікація",
+        default=True
     )
 
     posted = DateTimeLocalField(
         "Дата та час публікації",
         format="%Y-%m-%dT%H:%M",
         default=datetime.now,
-        validators=[InputRequired()],
+        validators=[InputRequired()]
     )
 
     category = SelectField(
@@ -58,19 +51,29 @@ class PostForm(FlaskForm):
             ("tech", "Технології"),
             ("other", "Інше"),
         ],
-        validators=[DataRequired()],
-    )
-
-    author_id = SelectField(
-        "Автор",
-        coerce=int,
-        validators=[InputRequired()],
+        validators=[DataRequired()]
     )
 
     tags = SelectMultipleField(
         "Теги",
         coerce=int,
-        render_kw={"size": 4},
+        render_kw={"size": 4}
+    )
+
+    submit = SubmitField("Зберегти")
+
+
+class CommentForm(FlaskForm):
+    content = TextAreaField(
+        "Коментар",
+        validators=[
+            DataRequired(),
+            Length(min=1, max=1000)
+        ],
+        render_kw={
+            "rows": 3,
+            "placeholder": "Напишіть коментар..."
+        }
     )
 
     submit = SubmitField("Зберегти")

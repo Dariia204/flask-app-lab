@@ -27,7 +27,7 @@ app.config.from_object(Config)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
     "TEST_DATABASE_URI",
-    "sqlite:///lab9.sqlite"
+    "sqlite:///final.sqlite"
 )
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ECHO"] = False

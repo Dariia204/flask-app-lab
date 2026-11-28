@@ -1,0 +1,262 @@
+
+{% extends "base.html" %}
+{% from "macros.html" import render_field %}
+
+{% block css %}
+<link rel="stylesheet"
+      href="{{ url_for('posts.static', filename='css/posts.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-md-9">
+
+        <h1 class="mb-4">{{ heading }}</h1>
+
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+
+                <p class="text-muted">
+                    Автор:
+                    {% if post is defined %}
+                        {{ post.user.username }}
+                    {% else %}
+                        {{ current_user.username }}
+                    {% endif %}
+                </p>
+
+                <form method="POST"
+                      enctype="multipart/form-data">
+
+                    {{ form.hidden_tag() }}
+
+                    {{ render_field(form.title) }}
+
+                    <div class="mb-3">
+
+                        {{ form.content.label(class="form-label") }}
+
+                        <div class="editor-toolbar">
+
+                            <button type="button"
+                                    onclick="formatText('**', '**')"
+                                    title="Жирний">
+                                <b>B</b>
+                            </button>
+
+                            <button type="button"
+                                    onclick="formatText('*', '*')"
+                                    title="Курсив">
+                                <i>I</i>
+                            </button>
+
+                            <button type="button"
+                                    onclick="formatText('## ', '')"
+                                    title="Заголовок">
+                                H2
+                            </button>
+
+                            <button type="button"
+                                    onclick="formatText('- ', '')"
+                                    title="Список">
+                                ☰
+                            </button>
+
+                            <button type="button"
+                                    onclick="formatText('1. ', '')"
+                                    title="Нумерований список">
+                                1.
+                            </button>
+
+                            <button type="button"
+                                    onclick="formatText('> ', '')"
+                                    title="Цитата">
+                                ❝
+                            </button>
+
+                            <button type="button"
+                                    onclick="formatText('`', '`')"
+                                    title="Код">
+                                &lt;/&gt;
+                            </button>
+
+                            <button type="button"
+                                    onclick="formatText('[', '](https://example.com)')"
+                                    title="Посилання">
+                                🔗
+                            </button>
+
+                        </div>
+
+                        {{ form.content(class="form-control editor-content", id="postContent") }}
+
+                        <small class="text-muted">
+                            Виділіть текст і натисніть потрібну кнопку.
+                            Підтримується Markdown.
+                        </small>
+
+                        {% for error in form.content.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+
+                    </div>
+
+                    <div class="mb-4">
+
+                        {{ form.image.label(class="form-label") }}
+
+                        {{ form.image(
+                            class="form-control",
+                            id="postImage",
+                            accept="image/jpeg,image/png,image/webp"
+                        ) }}
+
+                        <small class="text-muted">
+                            JPG, PNG або WEBP. Максимум 5 МБ.
+                        </small>
+
+                        {% for error in form.image.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+
+                        <img id="imagePreview"
+                             class="upload-preview mt-3"
+                             alt="Попередній перегляд"
+                             hidden>
+
+                        {% if post is defined and post.image %}
+
+                        <div class="mt-3">
+
+                            <p>Поточне зображення:</p>
+
+                            <img
+                                src="{{ url_for('posts.static', filename='uploads/' ~ post.image) }}"
+                                class="upload-preview"
+                                alt="Поточне зображення">
+
+                            <div class="form-check mt-2">
+
+                                {{ form.remove_image(class="form-check-input") }}
+
+                                {{ form.remove_image.label(class="form-check-label") }}
+
+                            </div>
+
+                        </div>
+
+                        {% endif %}
+
+                    </div>
+
+                    {{ render_field(form.category) }}
+                    {{ render_field(form.posted) }}
+
+                    <div class="mb-3">
+
+                        {{ form.tags.label(class="form-label") }}
+                        {{ form.tags(class="form-select") }}
+
+                        <small class="text-muted">
+                            Утримуйте Ctrl для вибору кількох тегів.
+                        </small>
+
+                        {% for error in form.tags.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+
+                    </div>
+
+                    <div class="form-check mb-3">
+
+                        {{ form.is_active(class="form-check-input") }}
+
+                        {{ form.is_active.label(class="form-check-label") }}
+
+                    </div>
+
+                    <div class="d-flex gap-2">
+
+                        {{ form.submit(class="btn btn-success") }}
+
+                        <a href="{{ url_for('posts.all_posts') }}"
+                           class="btn btn-secondary">
+                            Скасувати
+                        </a>
+
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+
+function formatText(before, after) {
+    const textarea = document.getElementById("postContent");
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+
+    const selected = textarea.value.substring(start, end);
+
+    const text = selected || "текст";
+
+    textarea.setRangeText(
+        before + text + after,
+        start,
+        end,
+        "end"
+    );
+
+    textarea.focus();
+
+    textarea.setSelectionRange(
+        start + before.length,
+        start + before.length + text.length
+    );
+}
+
+
+let previewUrl = null;
+
+document.getElementById("postImage").addEventListener(
+    "change",
+    function () {
+
+        const preview = document.getElementById("imagePreview");
+        const file = this.files[0];
+
+        if (previewUrl) {
+            URL.revokeObjectURL(previewUrl);
+            previewUrl = null;
+        }
+
+        if (!file) {
+            preview.hidden = true;
+            preview.removeAttribute("src");
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            alert("Максимальний розмір зображення — 5 МБ.");
+            this.value = "";
+            preview.hidden = true;
+            return;
+        }
+
+        previewUrl = URL.createObjectURL(file);
+
+        preview.src = previewUrl;
+        preview.hidden = false;
+    }
+);
+
+</script>
+
+{% endblock %}

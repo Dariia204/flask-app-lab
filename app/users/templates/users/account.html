@@ -1,0 +1,99 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8">
+
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+
+                <div class="text-center mb-4">
+
+                    <div class="rounded-circle bg-primary text-white
+                                d-inline-flex align-items-center
+                                justify-content-center mb-3"
+                         style="width: 90px; height: 90px; font-size: 40px;">
+                        {{ current_user.username[0]|upper }}
+                    </div>
+
+                    <h2>{{ current_user.full_name or current_user.username }}</h2>
+
+                    <p class="text-muted">
+                        @{{ current_user.username }}
+                    </p>
+
+                    {% if current_user.is_admin %}
+                    <span class="badge bg-danger">Адміністратор</span>
+                    {% endif %}
+
+                </div>
+
+                <div class="row text-center mb-4">
+
+                    <div class="col-4">
+                        <h4>{{ current_user.posts|length }}</h4>
+                        <span class="text-muted">Публікації</span>
+                    </div>
+
+                    <div class="col-4">
+                        <h4>{{ current_user.followers|length }}</h4>
+
+                        <a href="{{ url_for('users.followers_list', user_id=current_user.id) }}">
+                            Підписники
+                        </a>
+                    </div>
+
+                    <div class="col-4">
+                        <h4>{{ current_user.following|length }}</h4>
+
+                        <a href="{{ url_for('users.following_list', user_id=current_user.id) }}">
+                            Підписки
+                        </a>
+                    </div>
+
+                </div>
+
+                <hr>
+
+                <h5>Про себе</h5>
+
+                <p style="white-space: pre-wrap;">{{ current_user.bio or "Біографію ще не додано." }}</p>
+
+                <p>
+                    <strong>Електронна пошта:</strong>
+                    {{ current_user.email }}
+                </p>
+
+                <div class="d-flex gap-2 flex-wrap">
+
+                    <a href="{{ url_for('users.edit_account') }}"
+                       class="btn btn-primary">
+                        Редагувати профіль
+                    </a>
+
+                    <a href="{{ url_for('users.public_profile', user_id=current_user.id) }}"
+                       class="btn btn-outline-primary">
+                        Мої публікації
+                    </a>
+
+                    <a href="{{ url_for('users.profile') }}"
+                       class="btn btn-outline-secondary">
+                        Налаштування
+                    </a>
+
+                    <a href="{{ url_for('users.logout') }}"
+                       class="btn btn-outline-danger">
+                        Вийти
+                    </a>
+
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

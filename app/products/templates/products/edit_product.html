@@ -1,0 +1,65 @@
+
+{% extends "base.html" %}
+
+{% from "macros.html" import render_field %}
+
+{% block content %}
+
+<div class="card shadow-sm p-4">
+
+    <h2 class="mb-4">
+        Редагувати товар: {{ product.name }}
+    </h2>
+
+    <form method="POST"
+          enctype="multipart/form-data"
+          novalidate>
+
+        {{ form.hidden_tag() }}
+
+        {{ render_field(form.name) }}
+        {{ render_field(form.content) }}
+        {{ render_field(form.price) }}
+        {{ render_field(form.category) }}
+        {{ render_field(form.quantity) }}
+        {{ render_field(form.image) }}
+
+        {% if product.image_url %}
+            <div class="mb-3">
+                <p class="mb-2">Поточне зображення:</p>
+
+                <img
+                    src="{{ product.image_url }}"
+                    width="150"
+                    class="img-thumbnail"
+                    alt="{{ product.name }}"
+                >
+
+                <p class="text-muted small mt-2">
+                    Якщо не вибрати новий файл,
+                    попереднє зображення залишиться.
+                </p>
+            </div>
+        {% else %}
+            <p class="text-muted small">
+                Поточного зображення немає.
+                Можна завантажити нове.
+            </p>
+        {% endif %}
+
+        <div class="d-flex gap-2">
+
+            {{ form.submit(class="btn btn-primary") }}
+
+            <a href="{{ url_for('products.detail_product', id=product.id) }}"
+               class="btn btn-secondary">
+                Скасувати
+            </a>
+
+        </div>
+
+    </form>
+
+</div>
+
+{% endblock %}

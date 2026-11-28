@@ -1,0 +1,252 @@
+
+{% extends "base.html" %}
+
+{% block css %}
+<link rel="stylesheet"
+      href="{{ url_for('posts.static', filename='css/posts.css') }}">
+{% endblock %}
+
+{% block content %}
+
+{% set endpoint = 'posts.personal_feed' if personal else 'posts.all_posts' %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+    <div>
+        <h1>
+            {% if personal %}
+                Моя стрічка
+            {% else %}
+                Стрічка публікацій
+            {% endif %}
+        </h1>
+
+        <p class="text-muted">
+            Діліться думками та спілкуйтеся
+        </p>
+    </div>
+
+    {% if current_user.is_authenticated %}
+    <a href="{{ url_for('posts.create_post') }}"
+       class="btn btn-primary">
+        + Нова публікація
+    </a>
+    {% endif %}
+
+</div>
+
+<div class="d-flex gap-2 mb-4">
+
+    <a href="{{ url_for('posts.all_posts') }}"
+       class="btn {% if not personal %}btn-primary{% else %}btn-outline-primary{% endif %}">
+        Усі публікації
+    </a>
+
+    {% if current_user.is_authenticated %}
+
+    <a href="{{ url_for('posts.personal_feed') }}"
+       class="btn {% if personal %}btn-primary{% else %}btn-outline-primary{% endif %}">
+        Моя стрічка
+    </a>
+
+    {% endif %}
+
+</div>
+
+
+<form method="GET"
+      action="{{ url_for(endpoint) }}"
+      class="mb-4">
+
+    <div class="input-group">
+
+        <input type="search"
+               name="q"
+               value="{{ q }}"
+               maxlength="150"
+               class="form-control"
+               placeholder="Пошук за назвою, текстом, автором або тегом...">
+
+        <button type="submit" class="btn btn-primary px-4">
+            Знайти
+        </button>
+
+        {% if q %}
+        <a href="{{ url_for(endpoint) }}"
+           class="btn btn-outline-secondary px-3">
+            Скинути
+        </a>
+        {% endif %}
+
+    </div>
+
+</form>
+
+
+        {% if q %}
+        <a href="{{ url_for(endpoint) }}"
+           class="btn btn-outline-secondary">
+            Скинути
+        </a>
+        {% endif %}
+
+    </div>
+
+</form>
+
+{% if q %}
+<p class="text-muted">
+    Результати пошуку «{{ q }}»: {{ pagination.total }}
+</p>
+{% endif %}
+
+<div class="row g-4">
+
+    {% for post in posts %}
+
+    <div class="col-md-6 col-lg-4">
+
+        <div class="card post-card h-100 shadow-sm">
+
+            <img src="{{ url_for('posts.static', filename='uploads/' ~ post.image if post.image else 'img/default.jpg') }}"
+                 class="card-img-top post-image"
+                 alt="Зображення публікації">
+
+            <div class="card-body d-flex flex-column">
+
+                <span class="badge bg-secondary mb-2 align-self-start">
+                    {{ post.category }}
+                </span>
+
+                <h5 class="card-title">{{ post.title }}</h5>
+
+                <p class="text-muted small">
+
+                    Автор:
+
+                    {% if current_user.is_authenticated %}
+
+                    <a href="{{ url_for('users.public_profile', user_id=post.user_id) }}">
+                        {{ post.user.username }}
+                    </a>
+
+                    {% else %}
+
+                    {{ post.user.username }}
+
+                    {% endif %}
+
+                    <br>
+
+                    {{ post.posted.strftime('%d.%m.%Y %H:%M') }}
+
+                </p>
+
+                <p class="card-text">
+                    {{ post.content[:100] }}
+                    {% if post.content|length > 100 %}...{% endif %}
+                </p>
+
+                <div class="post-tags mb-3">
+
+                    {% for tag in post.tags %}
+                    <span class="post-tag">#{{ tag.name }}</span>
+                    {% endfor %}
+
+                </div>
+
+                <div class="d-flex gap-3 mb-3">
+                    <span>❤️ {{ post.likes|length }}</span>
+                    <span>💬 {{ post.comments|length }}</span>
+                </div>
+
+                <a href="{{ url_for('posts.detail_post', id=post.id) }}"
+                   class="btn btn-outline-primary mt-auto">
+                    Детальніше
+                </a>
+
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+
+    <div class="col-12">
+
+        <div class="alert alert-info">
+
+            {% if q %}
+                За вашим запитом нічого не знайдено.
+            {% else %}
+                Поки що немає публікацій.
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    {% endfor %}
+
+</div>
+
+{% if pagination.pages > 1 %}
+
+<nav class="mt-4" aria-label="Сторінки публікацій">
+
+    <ul class="pagination justify-content-center flex-wrap">
+
+        {% if pagination.has_prev %}
+        <li class="page-item">
+            <a class="page-link"
+               href="{{ url_for(endpoint, page=pagination.prev_num, q=q) }}">
+                Назад
+            </a>
+        </li>
+        {% endif %}
+
+        {% for number in pagination.iter_pages() %}
+
+            {% if number %}
+
+            <li class="page-item {% if number == pagination.page %}active{% endif %}">
+
+                <a class="page-link"
+                   href="{{ url_for(endpoint, page=number, q=q) }}">
+                    {{ number }}
+                </a>
+
+            </li>
+
+            {% else %}
+
+            <li class="page-item disabled">
+                <span class="page-link">…</span>
+            </li>
+
+            {% endif %}
+
+        {% endfor %}
+
+        {% if pagination.has_next %}
+        <li class="page-item">
+            <a class="page-link"
+               href="{{ url_for(endpoint, page=pagination.next_num, q=q) }}">
+                Далі
+            </a>
+        </li>
+        {% endif %}
+
+    </ul>
+
+</nav>
+
+{% endif %}
+
+{% if pagination.total %}
+<p class="text-center text-muted small mt-3">
+    Сторінка {{ pagination.page }} з {{ pagination.pages }}.
+    Усього публікацій: {{ pagination.total }}
+</p>
+{% endif %}
+
+{% endblock %}

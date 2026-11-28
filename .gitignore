@@ -1,3 +1,32 @@
+
+# Віртуальне середовище
 .venv/
+
+# Python
 __pycache__/
+*.py[cod]
+
+# Секретні налаштування
 .env
+
+# Журнали
+*.log
+
+# Локальна база TinyDB
+app/data/products.json
+
+# Завантажені фотографії
+app/products/static/uploads/
+
+# Кеш тестування
+.pytest_cache/
+
+# Файли редактора
+.vscode/
+
+# SocialSpace local data
+instance/final.sqlite
+instance/final.sqlite-*
+app/posts/static/uploads/
+.env.*
+!.env.example

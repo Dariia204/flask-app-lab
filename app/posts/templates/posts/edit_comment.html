@@ -1,0 +1,39 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+
+        <h2 class="mb-4">Редагування коментаря</h2>
+
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+
+                <form method="POST">
+
+                    {{ form.hidden_tag() }}
+
+                    {{ form.content.label(class="form-label") }}
+                    {{ form.content(class="form-control mb-3") }}
+
+                    {% for error in form.content.errors %}
+                    <p class="text-danger">{{ error }}</p>
+                    {% endfor %}
+
+                    {{ form.submit(class="btn btn-success") }}
+
+                    <a href="{{ url_for('posts.detail_post', id=comment.post_id) }}"
+                       class="btn btn-secondary">
+                        Скасувати
+                    </a>
+
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

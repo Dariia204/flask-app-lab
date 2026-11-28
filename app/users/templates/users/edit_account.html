@@ -1,0 +1,37 @@
+
+{% extends "base.html" %}
+{% from "macros.html" import render_field %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+
+        <h2 class="mb-4">Редагування профілю</h2>
+
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+
+                <form method="POST">
+
+                    {{ form.hidden_tag() }}
+
+                    {{ render_field(form.full_name) }}
+                    {{ render_field(form.bio) }}
+
+                    {{ form.submit(class="btn btn-success") }}
+
+                    <a href="{{ url_for('users.account') }}"
+                       class="btn btn-secondary">
+                        Скасувати
+                    </a>
+
+                </form>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

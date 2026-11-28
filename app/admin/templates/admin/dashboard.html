@@ -1,0 +1,396 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+
+        <div>
+            <h1>Панель адміністратора</h1>
+            <p class="text-muted mb-0">
+                Керування соціальною мережею SocialSpace
+            </p>
+        </div>
+
+        <span class="badge bg-dark p-3">
+            Administrator
+        </span>
+
+    </div>
+
+    <!-- Статистика -->
+
+    <div class="row g-3 mb-4">
+
+        {% for label, value, color, symbol in [
+            ('Користувачі', stats.users, 'primary', '👥'),
+            ('Публікації', stats.posts, 'success', '📝'),
+            ('Коментарі', stats.comments, 'warning', '💬'),
+            ('Лайки', stats.likes, 'danger', '❤️')
+        ] %}
+
+        <div class="col-6 col-lg-3">
+
+            <div class="card shadow-sm h-100 border-0 border-top border-4 border-{{ color }}">
+
+                <div class="card-body">
+
+                    <div class="fs-3">{{ symbol }}</div>
+
+                    <div class="display-5 fw-bold">
+                        {{ value }}
+                    </div>
+
+                    <div class="text-muted">
+                        {{ label }}
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    <!-- Навігація -->
+
+    <div class="d-flex flex-wrap gap-2 mb-4">
+
+        <a href="#users" class="btn btn-outline-primary">
+            Користувачі
+        </a>
+
+        <a href="#posts" class="btn btn-outline-success">
+            Публікації
+        </a>
+
+        <a href="#comments" class="btn btn-outline-secondary">
+            Коментарі
+        </a>
+
+    </div>
+
+    <!-- Користувачі -->
+
+    <div class="card shadow-sm mb-4" id="users">
+
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Керування користувачами</h5>
+        </div>
+
+        <div class="table-responsive">
+
+            <table class="table table-hover align-middle mb-0">
+
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Користувач</th>
+                        <th>Email</th>
+                        <th>Роль</th>
+                        <th>Дії</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for user in users %}
+
+                    <tr>
+
+                        <td>{{ user.id }}</td>
+
+                        <td>
+                            <a href="{{ url_for('users.public_profile', user_id=user.id) }}"
+                               class="text-decoration-none fw-bold">
+                                {{ user.username }}
+                            </a>
+                        </td>
+
+                        <td>{{ user.email }}</td>
+
+                        <td>
+
+                            {% if user.is_admin %}
+
+                            <span class="badge bg-dark">
+                                Адміністратор
+                            </span>
+
+                            {% else %}
+
+                            <span class="badge bg-secondary">
+                                Користувач
+                            </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+
+                            {% if user.id == current_user.id %}
+
+                            <span class="text-muted">
+                                Ваш акаунт
+                            </span>
+
+                            {% else %}
+
+                            <form method="POST"
+                                  action="{{ url_for('admin.toggle_user_role', user_id=user.id) }}"
+                                  onsubmit="return confirm('Змінити роль користувача?')">
+
+                                {{ action_form.hidden_tag() }}
+
+                                <button type="submit"
+                                        class="btn btn-sm btn-outline-primary">
+
+                                    {% if user.is_admin %}
+                                        Забрати права
+                                    {% else %}
+                                        Зробити адміном
+                                    {% endif %}
+
+                                </button>
+
+                            </form>
+
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <!-- Публікації -->
+
+    <div class="card shadow-sm mb-4" id="posts">
+
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0">Керування публікаціями</h5>
+        </div>
+
+        <div class="table-responsive">
+
+            <table class="table table-hover align-middle mb-0">
+
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Заголовок</th>
+                        <th>Автор</th>
+                        <th>Статус</th>
+                        <th>Дії</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for post in posts %}
+
+                    <tr>
+
+                        <td>{{ post.id }}</td>
+
+                        <td>
+                            <a href="{{ url_for('posts.detail_post', id=post.id) }}"
+                               class="text-decoration-none fw-bold">
+                                {{ post.title }}
+                            </a>
+                        </td>
+
+                        <td>{{ post.user.username }}</td>
+
+                        <td>
+
+                            {% if post.is_active %}
+
+                            <span class="badge bg-success">
+                                Активна
+                            </span>
+
+                            {% else %}
+
+                            <span class="badge bg-secondary">
+                                Прихована
+                            </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+
+                            <div class="d-flex flex-wrap gap-1">
+
+                                <a href="{{ url_for('posts.update_post', id=post.id) }}"
+                                   class="btn btn-sm btn-outline-primary">
+                                    Редагувати
+                                </a>
+
+                                <form method="POST"
+                                      action="{{ url_for('admin.toggle_post_status', post_id=post.id) }}">
+
+                                    {{ action_form.hidden_tag() }}
+
+                                    <button type="submit"
+                                            class="btn btn-sm btn-outline-warning">
+
+                                        {% if post.is_active %}
+                                            Приховати
+                                        {% else %}
+                                            Активувати
+                                        {% endif %}
+
+                                    </button>
+
+                                </form>
+
+                                <form method="POST"
+                                      action="{{ url_for('admin.delete_post', post_id=post.id) }}"
+                                      onsubmit="return confirm('Видалити публікацію назавжди?')">
+
+                                    {{ action_form.hidden_tag() }}
+
+                                    <button type="submit"
+                                            class="btn btn-sm btn-outline-danger">
+                                        Видалити
+                                    </button>
+
+                                </form>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    {% else %}
+
+                    <tr>
+                        <td colspan="5" class="text-center text-muted">
+                            Публікацій немає.
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <!-- Коментарі -->
+
+    <div class="card shadow-sm mb-4" id="comments">
+
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">Модерація коментарів</h5>
+        </div>
+
+        <div class="table-responsive">
+
+            <table class="table table-hover align-middle mb-0">
+
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Автор</th>
+                        <th>Коментар</th>
+                        <th>Публікація</th>
+                        <th>Дії</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for comment in comments %}
+
+                    <tr>
+
+                        <td>{{ comment.id }}</td>
+
+                        <td>{{ comment.user.username }}</td>
+
+                        <td style="max-width: 350px; overflow-wrap: anywhere;">
+                            {{ comment.content }}
+                        </td>
+
+                        <td>
+                            <a href="{{ url_for('posts.detail_post', id=comment.post.id) }}">
+                                {{ comment.post.title }}
+                            </a>
+                        </td>
+
+                        <td>
+
+                            <div class="d-flex flex-wrap gap-1">
+
+                                <a href="{{ url_for('posts.edit_comment', id=comment.id) }}"
+                                   class="btn btn-sm btn-outline-primary">
+                                    Редагувати
+                                </a>
+
+                                <form method="POST"
+                                      action="{{ url_for('admin.delete_comment', comment_id=comment.id) }}"
+                                      onsubmit="return confirm('Видалити коментар?')">
+
+                                    {{ action_form.hidden_tag() }}
+
+                                    <button type="submit"
+                                            class="btn btn-sm btn-outline-danger">
+                                        Видалити
+                                    </button>
+
+                                </form>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    {% else %}
+
+                    <tr>
+                        <td colspan="5" class="text-center text-muted">
+                            Коментарів немає.
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <a href="{{ url_for('posts.all_posts') }}"
+       class="btn btn-secondary">
+        Повернутися до публікацій
+    </a>
+
+</div>
+
+{% endblock %}
